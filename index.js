@@ -1,3 +1,4 @@
+const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
@@ -7,6 +8,8 @@ const getContentType = (url) => {
     switch (ext) {
         case '.html': return 'text/html';
         case '.css': return 'text/css';
+        case '.js': return 'application/javascript';
+        case '.json': return 'application/json';
         case '.jpg': return 'image/jpeg';
         case '.png': return 'image/png';
         case '.ico': return 'image/x-icon';
@@ -14,10 +17,10 @@ const getContentType = (url) => {
     }
 };
 
-// Main handler function for Vercel
-module.exports = (req, res) => {
+// Create an HTTP server
+const server = http.createServer((req, res) => {
     let url = req.url === "/" ? "/site.html" : req.url;
-    const filePath = `.${url}`;
+    const filePath = path.join(__dirname, url);
 
     // Determine content type based on file extension
     const contentType = getContentType(url);
@@ -25,21 +28,24 @@ module.exports = (req, res) => {
     // Read and serve the file
     fs.readFile(filePath, (err, data) => {
         if (err) {
-            // If file not found, return 404
             if (err.code === 'ENOENT') {
                 res.writeHead(404, { 'Content-Type': 'text/plain' });
                 res.end('404 Not Found');
                 console.log("404 Not Found: ", filePath);
             } else {
-                // Handle other errors (e.g., permission issues)
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
                 res.end('Internal Server Error');
                 console.error(err);
             }
         } else {
-            // If file found, return it with the appropriate content type
             res.writeHead(200, { 'Content-Type': contentType });
             res.end(data);
         }
     });
-};
+});
+
+// Define the port to listen to
+const PORT = process.env.PORT || 3000;  // Vercel will use process.env.PORT
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
