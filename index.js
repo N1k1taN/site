@@ -1,4 +1,3 @@
-const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
@@ -17,9 +16,9 @@ const getContentType = (url) => {
     }
 };
 
-// Create an HTTP server
-const server = http.createServer((req, res) => {
-    let url = req.url === "/" ? "/site.html" : req.url;
+// Export handler function for Vercel serverless function
+module.exports = (req, res) => {
+    let url = req.url === "/" ? "./site.html" : req.url;
     const filePath = path.join(__dirname, url);
 
     // Determine content type based on file extension
@@ -42,10 +41,4 @@ const server = http.createServer((req, res) => {
             res.end(data);
         }
     });
-});
-
-// Define the port to listen to
-const PORT = process.env.PORT || 3000;  // Vercel will use process.env.PORT
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+};
