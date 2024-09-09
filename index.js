@@ -16,25 +16,33 @@ const getContentType = (url) => {
     }
 };
 
-// Export handler function for Vercel serverless function
+// Main handler function for Vercel serverless function
 module.exports = (req, res) => {
-    let url = req.url === "/" ? "./site.html" : req.url;
-    const filePath = path.join(__dirname, url);
+    let url = req.url === "/" ? "/index.html" : req.url;
+    url = path.normalize(url).replace(/^(\.\.[\/\\])+/, ''); // Sanitize path
+    
+    // Determine folder based on file type
+    let folder;
+    if (url.endsWith('.css')) {
+        folder = 'styles';
+    } else if (url.endsWith('.js')) {
+        folder = 'components';
+    } else {
+        folder = ''; // Default folder (root) for HTML or other files
+    }
 
-    // Determine content type based on file extension
+    const filePath = path.join(__dirname, folder, url);
+
     const contentType = getContentType(url);
 
-    // Read and serve the file
     fs.readFile(filePath, (err, data) => {
         if (err) {
             if (err.code === 'ENOENT') {
                 res.writeHead(404, { 'Content-Type': 'text/plain' });
                 res.end('404 Not Found');
-                console.log("404 Not Found: ", filePath);
             } else {
                 res.writeHead(500, { 'Content-Type': 'text/plain' });
                 res.end('Internal Server Error');
-                console.error(err);
             }
         } else {
             res.writeHead(200, { 'Content-Type': contentType });
