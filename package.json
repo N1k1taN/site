@@ -1,0 +1,9 @@
+{
+    "name": "advokat",
+    "scripts": {
+        "start": "node ./index.js"
+    },
+    "dependencies": {
+        "nodemailer": "^6.9.15"
+    }
+}
